@@ -1,0 +1,20 @@
+---
+- name: Prepares testing environment. Checks packages
+  hosts: all
+  become: true
+  tasks:
+    - name: checks python package
+      raw: apt update && apt install -y python-all
+      tags:
+        - raw
+
+    - name: checks packages
+      apt: name={{item}} state=present
+      loop: "{{common_pkg_list}}"
+      loop_control:
+        label: "{{item}}"
+      when:
+        - common_pkg_list is defined
+        - common_pkg_list
+      tags:
+        - pkg

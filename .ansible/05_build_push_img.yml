@@ -1,0 +1,27 @@
+- name: Configures testing environment. Checks builder container image
+  hosts: pkg
+  become: true
+  tasks:
+
+    - name: checks build dir
+      file: state=directory dest=/var/tmp/builder
+      tags:
+        - build
+        - dir
+
+    - name: checks Dockerfile
+      copy: src=Dockerfile.builder dest=/var/tmp/builder/Dockerfile mode=0644
+      tags:
+        - build
+        - dockerfile
+
+    - name: checks builder container image
+      docker_image:
+        name: "{{reg_addr ~':'~ reg_port}}/builder:1.0.0"
+        build: path=/var/tmp/builder
+        source: build
+        state: present
+        push: true
+      tags:
+        - build
+        - img

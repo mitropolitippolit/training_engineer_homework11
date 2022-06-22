@@ -1,0 +1,60 @@
+---
+- name: Prepares testing environment. Checks automation server
+  hosts: aut
+  become: true
+  vars:
+    repo_key_url: https://pkg.jenkins.io/debian/jenkins.io.key
+    repo_keyring_file_path: /etc/apt/trusted.gpg.d/jenkins-keyring.gpg
+    repo_conf_line: "deb [signed-by={{repo_keyring_file_path}}] https://pkg.jenkins.io/debian binary/"
+    repo_file_name: "jenkins"
+
+  tasks:
+
+    - name: checks jenkins repo apt key
+      apt_key: url={{repo_key_url}} keyring={{repo_keyring_file_path}} state=present
+      tags:
+        - auto
+        - apt
+
+    - name: checks jenkins repo
+      apt_repository: repo={{repo_conf_line}} filename={{repo_file_name}} state=present
+      tags:
+        - auto
+        - apt
+
+    - name: checks required package
+      apt: name={{item}} state=present
+      loop:
+        - fontconfig
+        - openjdk-11-jre-headless
+        - jenkins
+      tags:
+        - auto
+        - pkg
+      
+    - name: checks jenkinks service
+      systemd: name=jenkins state=started
+      tags:
+        - auto
+        - svc
+
+    - name: sleeps for some time
+      pause: seconds=30
+      tags:
+        - auto
+        - sleep
+
+    - name: gets default password
+      shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+      register: jenkins_pass
+      tags:
+        - auto
+        - pass
+
+    - name: prints default password
+      debug:
+        msg: "jenkins default admin pass: {{jenkins_pass.stdout}}"
+      tags:
+        - auto
+        - pass
+

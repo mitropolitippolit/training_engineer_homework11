@@ -1,0 +1,44 @@
+---
+- name: Configures testing environment. Checks registry authentication
+  hosts: "!reg"
+  become: true
+  vars_prompt:
+    - name: reg_user
+      prompt: registry user login
+      private: false
+      default: admin
+    - name: reg_pass
+      prompt: registry user password
+      private: true
+  tasks:
+  
+    - name: checks /root/.docker dir
+      file: state=directory path=/root/.docker mode=0700
+      tags:
+        - dir
+        - docker
+        - auth
+
+    - name: checks config.json
+      template: src=config.json.j2 dest=/root/.docker/config.json mode=0600
+      tags:
+        - docker
+        - json
+        - auth
+
+    - name: checks /etc/docker/daemon.json file
+      template: src=daemon.json.j2 dest=/etc/docker/daemon.json mode=0644
+      tags:
+        - docker
+        - json
+        - auth
+      notify: restarts docker service
+
+  handlers:
+    - name: restarts docker service
+      systemd: name=docker state=restarted
+      tags:
+        - docker
+        - svc
+        - auth 
+

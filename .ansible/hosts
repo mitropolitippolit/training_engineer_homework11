@@ -1,0 +1,27 @@
+[all]
+srv01 ansible_host=192.168.10.10
+srv02 ansible_host=192.168.10.20
+srv03 ansible_host=192.168.10.30
+srv04 ansible_host=192.168.10.40
+
+[all:vars]
+# ansible vars
+ansible_ssh_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/id_rsa
+# custom vars
+common_pkg_list=["docker.io","python3-docker"]
+reg_addr=192.168.10.10
+reg_port=8082
+reg_user=admin
+
+[reg]
+srv01
+
+[aut]
+srv02
+
+[pkg]
+srv03
+
+[app]
+srv04

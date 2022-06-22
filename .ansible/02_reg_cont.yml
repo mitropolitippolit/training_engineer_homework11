@@ -1,0 +1,33 @@
+---
+- name: Prepares testing environment. Checks registry container
+  hosts: reg
+  become: true
+  tasks:
+    - name: checks registry container
+      docker_container:
+        name: mynexus
+        image: sonatype/nexus3
+        ports: 
+          - 8081:8081
+          - "{{reg_port}}:{{reg_port}}"
+        volumes: nexus:/nexus-data
+        state: started
+      tags:
+        - reg
+
+    - name: sleeps for some time
+      pause: seconds=120
+      tags:
+        - reg
+
+    - name: gets default password
+      shell: cat /var/lib/docker/volumes/nexus/_data/admin.password
+      register: reg_pass
+      tags:
+        - reg
+
+    - name: prints default password
+      debug:
+        msg: "registry default admin password: {{reg_pass.stdout}}"
+      tags:
+        - reg
